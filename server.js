@@ -46,7 +46,7 @@ app.post('/paymentlink', async (req, res) => {
                 tx_ref: req.body.tx,
                 amount: req.body.amount,
                 currency: "USD",
-                redirect_url: "http://localhost:8000/payment-callback",
+                redirect_url: "https://blok-ramp.herokuapp.com/payment-callback",
 
                 customer: { 
                   email: req.body.email,
