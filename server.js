@@ -255,7 +255,8 @@ app.post('/paymentlink', async (req, res) => {
     //for sell calls
     //for callback "https://blok-ramp.herokuapp.com/payment-callbacktwo"
     app.post('/sellcrypto', async (req, res) => {
-
+      console.log("called sell");
+      console.log(req.body);
       //calling coingate to take crypto
       const encodedParams = new URLSearchParams();
       encodedParams.set('order_id', req.body.id);
