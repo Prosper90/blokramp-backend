@@ -271,7 +271,7 @@ app.post('/paymentlink', async (req, res) => {
         headers: {
           accept: 'application/json',
           'content-type': 'application/x-www-form-urlencoded',
-          'Authorization': process.env.COINGATE_API
+          'Authorization': `Bearer ${process.env.COINGATE_API}`
         },
         data: encodedParams,
       };
