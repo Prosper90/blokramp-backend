@@ -263,7 +263,10 @@ app.post('/paymentlink', async (req, res) => {
       encodedParams.set('price_amount', req.body.amount);
       encodedParams.set('price_currency', 'USD');
       encodedParams.set('receive_currency', 'BTC');
-      encodedParams.set('callback_url', 'https://tester.requestcatcher.com/test');
+      encodedParams.set('callback_url', 'https://blok-ramp.herokuapp.com/order-callback');
+      encodedParams.set('success_url', 'https://blok-ramp.herokuapp.com/payment-callbacktwo');
+      encodedParams.set('cancel_url', 'https://blockramp.vercel.app/');
+
       
       const options = {
         method: 'POST',
@@ -276,6 +279,7 @@ app.post('/paymentlink', async (req, res) => {
         data: encodedParams,
       };
       
+      /*
       axios
         .request(options)
         .then(function (response) {
@@ -284,10 +288,13 @@ app.post('/paymentlink', async (req, res) => {
         .catch(function (error) {
           console.error(error);
         });
+*/     
+
 
         const paymentLink = await axios.request(options);
-        console.log(paymentLink);
-        res.send({paymentLink: paymentLink});
+        console.log(paymentLink.data);
+        res.send(paymentLink.data);
+        
   })
 
  
@@ -295,6 +302,12 @@ app.post('/paymentlink', async (req, res) => {
   //payment two callback
   app.get('/payment-callbacktwo', async (req, res) => { 
     console.log("hi");
+  });
+
+
+//order callback url
+  app.get('/order-callback', async (req, res) => { 
+    console.log("called ordercallback");
   })
 
 
