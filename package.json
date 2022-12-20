@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^1.2.1",
+    "bitcore-explorers": "^1.0.1",
     "bitcore-lib": "^8.25.40",
     "body-parser": "^1.20.1",
     "cors": "^2.8.5",

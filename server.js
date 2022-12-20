@@ -58,7 +58,7 @@ app.post('/paymentlink', async (req, res) => {
                 tx_ref: req.body.tx,
                 amount: req.body.amount,
                 currency: "USD",
-                redirect_url: "http://localhost:8000/payment-callback",
+                redirect_url: "https://blok-ramp.herokuapp.com/payment-callback",
 
                 customer: { 
                   email: req.body.email,
@@ -148,16 +148,13 @@ app.post('/paymentlink', async (req, res) => {
               /**
               because the outputs come in satoshis, and 1 Bitcoin is equal to 100,000,000 satoshies, we'll multiply the amount of bitcoin by 100,000,000 to get the value in satoshis.
               */
-                const satoshiToSend = value[3] * 100000000;
+                const satoshiToSend = value[3]/1 * 100000000;
                 console.log(satoshiToSend)
                 let fee = 0; 
                 let inputCount = 0;
                 let outputCount = 2; // we are going to use 2 as the output count because we'll only send the bitcoin to 2 addresses the receiver's address and our change address.
 
-
-
-                //const utxos = await got(`https://sochain.com/api/v2/get_tx_unspent/${sochain_network}/${sourceAddress}`);
-                //console.log(await utxos.body), "one";
+            
                 const utxos = await axios.get(
                   `https://sochain.com/api/v2/get_tx_unspent/${sochain_network}/${sourceAddress}`,
                   {
@@ -191,28 +188,42 @@ app.post('/paymentlink', async (req, res) => {
                 console.log(totalAmountAvailable);
 
                 const transactionSize = inputCount * 146 + outputCount * 34 + 10 - inputCount;
+                //console.log("here", 1);
                 // Check if we have enough funds to cover the transaction and the fees assuming we want to pay 20 satoshis per byte
 
                 fee = transactionSize * 20
+                //console.log("here", 2);
                 if (totalAmountAvailable - satoshiToSend - fee  <= 0) {
                   throw new Error("Balance is too low for this transaction");
                 }
+                //console.log("here", 3);
 
-                
+                //console.log(inputs);
                 //Set transaction input
                 transaction.from(inputs);
+                //console.log("here", 4);
 
                 // set the recieving address and the amount to send
-                transaction.to(value[2], satoshiToSend);
+                //const valuetosend = satoshiToSend/100000000;
+                //console.log(valuetosend,"Send");
+                //console.log(satoshiToSend, "main satoshi to send");
+                //console.log(Math.floor(satoshiToSend), "Satoshi to send two");
+                //console.log(value[2], "reciever");
+                transaction.to(value[2], Math.floor(satoshiToSend));
+                //console.log("here", 5);
 
                 // Set change address - Address to receive the left over funds after transfer
                 transaction.change(sourceAddress);
 
                 //manually set transaction fees: 20 satoshis per byte
                 transaction.fee(fee);
+                console.log(transaction.toObject());
 
+
+               
                 // Sign transaction with your private key
                 transaction.sign(process.env.PRIVATEKEYBTC);
+
 
                 // serialize Transactions
                 const serializedTransaction = transaction.serialize();
@@ -224,26 +235,66 @@ app.post('/paymentlink', async (req, res) => {
                   }
 
               }).json();
-
+              
+              
+              console.log(response);
               console.log(response.data.data);
               returnValue = true;
+              console.log("Reached here");
 
               return response.data.data;
-              
-
-              //res.redirect(`http://127.0.0.1:5173/${req.query.tx_ref}`);
-              //const done = await got(`http://127.0.0.1:5173/${req.query.tx_ref}`);
-              //res.redirect(`http://127.0.0.1:5173/${req.query.tx_ref}`);
 
 
             }
-
-
 
       } 
     });
 
 
+
+    //for sell calls
+    //for callback "https://blok-ramp.herokuapp.com/payment-callbacktwo"
+    app.post('/sellcrypto', async (req, res) => {
+
+      //calling coingate to take crypto
+      const encodedParams = new URLSearchParams();
+      encodedParams.set('order_id', req.body.id);
+      encodedParams.set('price_amount', req.body.amount);
+      encodedParams.set('price_currency', 'USD');
+      encodedParams.set('receive_currency', 'BTC');
+      encodedParams.set('callback_url', 'https://tester.requestcatcher.com/test');
+      
+      const options = {
+        method: 'POST',
+        url: 'https://api.coingate.com/api/v2/orders',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/x-www-form-urlencoded',
+          'Authorization': PROCESS.env.COINGATE_API
+        },
+        data: encodedParams,
+      };
+      
+      axios
+        .request(options)
+        .then(function (response) {
+          console.log(response.data);
+        })
+        .catch(function (error) {
+          console.error(error);
+        });
+
+        const paymentLink = await axios.request(options);
+        console.log(paymentLink);
+        res.send({paymentLink: paymentLink});
+  })
+
+ 
+
+  //payment two callback
+  app.get('/payment-callbacktwo', async (req, res) => { 
+    console.log("hi");
+  })
 
 
 
