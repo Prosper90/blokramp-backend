@@ -267,7 +267,7 @@ app.post('/paymentlink', async (req, res) => {
       
       const options = {
         method: 'POST',
-        url: 'https://api.coingate.com/api/v2/orders',
+        url: 'https://api-sandbox.coingate.com/api/v2/orders',
         headers: {
           accept: 'application/json',
           'content-type': 'application/x-www-form-urlencoded',
