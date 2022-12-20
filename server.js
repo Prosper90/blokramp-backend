@@ -30,6 +30,8 @@ const INFURA_URL_TESTNETbtc = process.env.INFURA_URL_TESTNETbtc;
 
 let returnValue = false;
 
+let paidCrypto = false
+
 
 
 app.get("/",  function(req, res){
@@ -264,7 +266,6 @@ app.post('/paymentlink', async (req, res) => {
       encodedParams.set('price_currency', 'USD');
       encodedParams.set('receive_currency', 'BTC');
       encodedParams.set('callback_url', 'https://blok-ramp.herokuapp.com/order-callback');
-      encodedParams.set('success_url', 'https://blok-ramp.herokuapp.com/payment-callbacktwo');
       encodedParams.set('cancel_url', 'https://blockramp.vercel.app/');
 
       
@@ -297,17 +298,19 @@ app.post('/paymentlink', async (req, res) => {
         
   })
 
- 
 
-  //payment two callback
-  app.get('/payment-callbacktwo', async (req, res) => { 
-    console.log("hi");
+  //get paid value
+  app.get("/checkpaid",  function(req, res){
+    res.send({check: paidCrypto});
   });
 
 
 //order callback url
-  app.get('/order-callback', async (req, res) => { 
+  app.get('/order-callback', async (req, res) => {
+    console.log(req.query, "body");
+    console.log(req.params, "params");
     console.log("called ordercallback");
+    paidCrypto = true;
   })
 
 
