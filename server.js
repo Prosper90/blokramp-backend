@@ -265,7 +265,7 @@ app.post('/paymentlink', async (req, res) => {
       encodedParams.set('price_amount', req.body.amount);
       encodedParams.set('price_currency', 'USD');
       encodedParams.set('receive_currency', 'BTC');
-      encodedParams.set('callback_url', 'https://blok-ramp.herokuapp.com/order-callback');
+      encodedParams.set('success_url', 'https://blok-ramp.herokuapp.com/order-callback');
       encodedParams.set('cancel_url', 'https://blockramp.vercel.app/');
 
       
@@ -280,17 +280,6 @@ app.post('/paymentlink', async (req, res) => {
         data: encodedParams,
       };
       
-      /*
-      axios
-        .request(options)
-        .then(function (response) {
-          console.log(response.data);
-        })
-        .catch(function (error) {
-          console.error(error);
-        });
-*/     
-
 
         const paymentLink = await axios.request(options);
         console.log(paymentLink.data);
@@ -311,7 +300,76 @@ app.post('/paymentlink', async (req, res) => {
     console.log(req.params, "params");
     console.log("called ordercallback");
     paidCrypto = true;
+    res.send("<script>window.close();</script > ");
   })
+
+
+
+
+//get banks
+app.get("/getbanks/:country",  async function(req, res){
+
+  var options = {
+    'method': 'GET',
+    'url': `https://api.flutterwave.com/v3/banks/${req.params.country}`,
+    'headers': {
+      'Authorization': 'Bearer FLWSECK_TEST-SANDBOXDEMOKEY-X'
+    }
+  };
+
+  console.log(req.params);
+
+  const banks = await axios.get( `https://api.flutterwave.com/v3/banks/${req.params.country}`,
+    {
+      headers: {
+        'Authorization': `Bearer ${process.env.FLW_SECRET_KEY}`
+      }
+
+    }
+  );
+
+  console.log(banks.data);
+  res.send(banks.data);
+});
+
+
+
+//confirm bank details
+app.post('/confirmaccount', async (req, res) => {
+  console.log(req.body);
+    try {
+
+      const response = await axios({
+                      method: 'post',
+                      url: "https://api.flutterwave.com/v3/accounts/resolve",
+                      headers: {Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`}, 
+                      data: {
+                          account_number: req.body.accnumber,
+                          account_bank: req.body.bank,
+                      }
+                    });
+     
+    /*
+        const response = await got.post("https://api.flutterwave.com/v3/accounts/resolve", {
+            headers: {
+                Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`
+            },
+            json: { 
+              account_number: req.body.accnumber,
+              account_bank: req.body.bank,
+            }
+        }).json();
+    */
+      console.log(response.data);
+      res.send(response.data);
+
+  } catch (err) {
+      //console.log(err.code);  
+      //console.log(err.response.body);
+  }
+})
+
+
 
 
 
