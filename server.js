@@ -10,7 +10,6 @@ const bitcore = require("bitcore-lib");
 const axios = require("axios");
 
 
-
 const app = express();
 
 // parse application/json
@@ -337,37 +336,59 @@ app.get("/getbanks/:country",  async function(req, res){
 //confirm bank details
 app.post('/confirmaccount', async (req, res) => {
   console.log(req.body);
-    try {
+   
 
-      const response = await axios({
-                      method: 'post',
-                      url: "https://api.flutterwave.com/v3/accounts/resolve",
-                      headers: {Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`}, 
-                      data: {
-                          account_number: req.body.accnumber,
-                          account_bank: req.body.bank,
-                      }
-                    });
+       console.log("Running");
      
-    /*
-        const response = await got.post("https://api.flutterwave.com/v3/accounts/resolve", {
-            headers: {
-                Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`
-            },
-            json: { 
-              account_number: req.body.accnumber,
-              account_bank: req.body.bank,
-            }
-        }).json();
-    */
-      console.log(response.data);
-      res.send(response.data);
 
-  } catch (err) {
-      //console.log(err.code);  
-      //console.log(err.response.body);
-  }
+        const flw = new Flutterwave(process.env.FLW_PUBLIC_KEY, process.env.FLW_SECRET_KEY);
+        const details = {
+          account_number: req.body.accnumber,
+          account_bank: req.body.bank
+        };
+        const response = await flw.Misc.verify_Account(details)
+
+        console.log(response);
+        res.send(response);
+
+
 })
+
+
+//Transfer to bank
+app.post('/transfertobank', async (req, res) => {
+  console.log(req.body);
+
+  const flw = new Flutterwave(process.env.FLW_PUBLIC_KEY, process.env.FLW_SECRET_KEY);
+    const details = {
+        account_bank: "044",
+        account_number: "0690000040",
+        amount: 200,
+        narration: "Payment for things",
+        currency: "NGN",
+        reference: generateTransactionReference(),
+        callback_url: "https://webhook.site/b3e505b0-fe02-430e-a538-22bbbce8ce0d",
+        debit_currency: "NGN"
+    };
+    const response = await flw.Transfer.initiate(details);
+
+   
+  
+
+        /*
+        const flw = new Flutterwave(process.env.FLW_PUBLIC_KEY, process.env.FLW_SECRET_KEY);
+        const details = {
+          account_number: req.body.accnumber,
+          account_bank: req.body.bank
+        };
+        const response = await flw.Misc.verify_Account(details)
+        */
+        console.log(response);
+        res.send(response);
+
+
+})
+
 
 
 
